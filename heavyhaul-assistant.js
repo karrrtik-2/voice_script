@@ -80,12 +80,11 @@ if (!shouldInitializeWidget()) {
         height: 24px;
     }
     
-    /* Popup container - for centered button */
+    /* Popup container */
     .heavyhaul-popup {
         position: fixed;
         bottom: 90px;
-        left: 50%;
-        transform: translateX(-50%) translateY(20px) scale(0.95);
+        right: 20px;
         width: 450px;
         max-height: 800px;
         background-color: var(--bg-dark);
@@ -93,7 +92,8 @@ if (!shouldInitializeWidget()) {
         box-shadow: 0 4px 24px rgba(0,0,0,0.3);
         overflow: hidden;
         opacity: 0;
-        transform-origin: bottom center;
+        transform: translateY(20px) scale(0.95);
+        transform-origin: bottom right;
         transition: all 0.3s ease-in-out;
         pointer-events: none;
         display: flex;
@@ -103,7 +103,7 @@ if (!shouldInitializeWidget()) {
     
     .heavyhaul-popup.active {
         opacity: 1;
-        transform: translateX(-50%) translateY(0) scale(1);
+        transform: translateY(0) scale(1);
         pointer-events: all;
     }
     
