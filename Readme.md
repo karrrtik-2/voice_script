@@ -13,7 +13,7 @@ A voice-activated assistant widget for HeavyHaul transportation services that ca
 
 ## Demo
 
-See the [live demo](https://yourusername.github.io/heavyhaul-assistant/)
+See the [live demo](https://github.com/karrrtik-2/voice_script/)
 
 ## Installation
 
@@ -22,4 +22,4 @@ See the [live demo](https://yourusername.github.io/heavyhaul-assistant/)
 Add the following script tag to your website:
 
 ```html
-<script src="https://yourusername.github.io/heavyhaul-assistant/dist/heavyhaul-assistant.js"></script>
+<script src="https://github.com/karrrtik-2/voice_script/dist/heavyhaul-assistant.js"></script>
