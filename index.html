@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeavyHaul Voice Assistant Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #5e81f4;
+            margin-bottom: 30px;
+        }
+        .demo-box {
+            background-color: #f5f7fd;
+            border: 1px solid #e1e5f1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .feature-list {
+            margin-bottom: 30px;
+        }
+        .feature-list li {
+            margin-bottom: 10px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #5e81f4;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #4a68d9;
+        }
+    </style>
+</head>
+<body>
+    <h1>HeavyHaul Voice Assistant Widget</h1>
+    
+    <div class="demo-box">
+        <h2>Demo</h2>
+        <p>Click the microphone button in the bottom right corner to activate the voice assistant.</p>
+        <p><strong>Note:</strong> This demo has a simulated Order ID: "DEMO-12345". In a real implementation, the Order ID would be extracted from the URL.</p>
+    </div>
+    
+    <h2>How to Use</h2>
+    <p>Add the following script tag to your website:</p>
+    <pre><code>&lt;script src="https://yourusername.github.io/heavyhaul-assistant/dist/heavyhaul-assistant.js"&gt;&lt;/script&gt;</code></pre>
+    
+    <h2>Features</h2>
+    <ul class="feature-list">
+        <li>Voice-activated assistant for order inquiries</li>
+        <li>Extracts order ID from URL automatically</li>
+        <li>Natural language processing</li>
+        <li>TTS (Text-to-Speech) responses</li>
+        <li>Stop audio playback with voice command</li>
+        <li>Responsive floating button design</li>
+    </ul>
+    
+    <h2>Requirements</h2>
+    <p>The widget requires a modern browser with support for:</p>
+    <ul>
+        <li>Web Speech API</li>
+        <li>Fetch API</li>
+        <li>Web Audio API</li>
+    </ul>
+    
+    <div style="margin-top: 40px; text-align: center;">
+        <a href="https://github.com/yourusername/heavyhaul-assistant" class="button">View on GitHub</a>
+    </div>
+    
+    <script>
+        // Manually override the URL for demo purposes
+        window.history.pushState({}, '', '?order_id=DEMO-12345');
+    </script>
+    
+    <!-- Include the voice assistant widget -->
+    <script src="dist/heavyhaul-assistant.js"></script>
+</body>
+</html>
