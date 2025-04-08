@@ -286,9 +286,10 @@ if (!shouldInitializeWidget()) {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin-right: 6px;
-        width: 16px;
-        height: 16px;
+        width: 56px; /* or whatever size the button actually is */
+        height: 56px;
+        background-color: #4f6ef7; /* optional, if you're not already styling the button */
+        border-radius: 50%;
     }
     
     .heavyhaul-mic-icon svg {
