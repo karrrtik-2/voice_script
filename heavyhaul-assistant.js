@@ -3,6 +3,19 @@
  * (c) 2025 HeavyHaul
  * Released under the MIT License
  */
+function shouldInitializeWidget() {
+    const currentUrl = window.location.href;
+    const orderDetailsPattern = /order-details/;
+    const hasAIModel = window.location.search.includes('model=AI');
+    
+    return orderDetailsPattern.test(currentUrl) && hasAIModel;
+}
+
+// exit if url is different
+if (!shouldInitializeWidget()) {
+    console.log("URL doesn't match required pattern. Widget not initialized.");
+} else 
+{
 (function() {
     // Create and inject CSS
     const style = document.createElement('style');
@@ -851,3 +864,4 @@
         initWidget();
     }
 })();
+}
