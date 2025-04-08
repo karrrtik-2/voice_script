@@ -8,6 +8,15 @@ function shouldInitializeWidget() {
     const orderDetailsPattern = /order-details/;
     const hasAIModel = window.location.search.includes('model=AI');
     
+    // Debug output to see what's being matched
+    console.log('URL check results:', {
+        hasOrderDetails: orderDetailsPattern.test(currentUrl),
+        hasAIModel: hasAIModel,
+        currentUrl: currentUrl,
+        search: window.location.search
+    });
+    
+    // Both conditions must be true
     return orderDetailsPattern.test(currentUrl) && hasAIModel;
 }
 
