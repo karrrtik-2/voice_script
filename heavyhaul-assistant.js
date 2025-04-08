@@ -49,11 +49,12 @@ if (!shouldInitializeWidget()) {
         z-index: 99999;
     }
     
-    /* Floating button */
+    /* Floating button - centered version */
     .heavyhaul-btn {
         position: fixed;
         bottom: 20px;
-        right: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         width: 60px;
         height: 60px;
         border-radius: 50%;
@@ -68,7 +69,7 @@ if (!shouldInitializeWidget()) {
     }
     
     .heavyhaul-btn:hover {
-        transform: scale(1.1);
+        transform: translateX(-50%) scale(1.1);
         background-color: var(--primary-hover);
     }
     
@@ -79,11 +80,12 @@ if (!shouldInitializeWidget()) {
         height: 24px;
     }
     
-    /* Popup container */
+    /* Popup container - for centered button */
     .heavyhaul-popup {
         position: fixed;
         bottom: 90px;
-        right: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px) scale(0.95);
         width: 450px;
         max-height: 800px;
         background-color: var(--bg-dark);
@@ -91,8 +93,7 @@ if (!shouldInitializeWidget()) {
         box-shadow: 0 4px 24px rgba(0,0,0,0.3);
         overflow: hidden;
         opacity: 0;
-        transform: translateY(20px) scale(0.95);
-        transform-origin: bottom right;
+        transform-origin: bottom center;
         transition: all 0.3s ease-in-out;
         pointer-events: none;
         display: flex;
@@ -102,7 +103,7 @@ if (!shouldInitializeWidget()) {
     
     .heavyhaul-popup.active {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateX(-50%) translateY(0) scale(1);
         pointer-events: all;
     }
     
