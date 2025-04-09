@@ -65,6 +65,7 @@ if (!shouldInitializeWidget()) {
             cursor: pointer;
             transition: all 0.3s;
             z-index: 99999;
+            line-height: 19px;
         }
         
         .heavyhaul-btn:hover {
