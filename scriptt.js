@@ -111,17 +111,19 @@ if (!shouldInitializeWidget()) {
             background-color: var(--primary);
             padding: 15px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center; /* Change from space-between to center */
             align-items: center;
+            position: relative; /* Add position relative */
         }
-        
+
         .heavyhaul-popup-title {
             color: white;
             font-weight: 600;
             font-size: 16px;
             margin: 0;
+            /* No additional styling needed as the parent is already centering it */
         }
-        
+
         .heavyhaul-popup-close {
             color: white;
             background: none;
@@ -129,6 +131,10 @@ if (!shouldInitializeWidget()) {
             font-size: 18px;
             cursor: pointer;
             padding: 0;
+            position: absolute; /* Position the close button absolutely */
+            right: 15px; /* Position from the right edge */
+            top: 50%; /* Center vertically */
+            transform: translateY(-50%); /* Fine-tune vertical centering */
         }
         
         .heavyhaul-popup-body {
@@ -393,7 +399,7 @@ if (!shouldInitializeWidget()) {
             
             popup.innerHTML = `
                 <div class="heavyhaul-popup-header">
-                    <h3 class="heavyhaul-popup-title">HeavyHaul Voice Assistant</h3>
+                    <h3 class="heavyhaul-popup-title">HeavyHaulGBT</h3>
                     <button class="heavyhaul-popup-close">&times;</button>
                 </div>
                 <div class="heavyhaul-popup-body">
