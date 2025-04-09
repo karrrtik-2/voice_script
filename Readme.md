@@ -22,4 +22,4 @@ See the [live demo](https://github.com/karrrtik-2/voice_script/)
 Add the following script tag to your website:
 
 ```html
-<script src="https://github.com/karrrtik-2/voice_script/dist/heavyhaul-assistant.js"></script>
+<script src="https://github.com/karrrtik-2/voice_script/scriptt.js"></script>
