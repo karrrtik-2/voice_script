@@ -49,12 +49,11 @@ if (!shouldInitializeWidget()) {
         z-index: 99999;
     }
     
-    /* Floating button - centered version */
+    /* Floating button */
     .heavyhaul-btn {
         position: fixed;
         bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+        right: 20px;
         width: 60px;
         height: 60px;
         border-radius: 50%;
@@ -69,7 +68,7 @@ if (!shouldInitializeWidget()) {
     }
     
     .heavyhaul-btn:hover {
-        transform: translateX(-50%) scale(1.1);
+        transform: scale(1.1);
         background-color: var(--primary-hover);
     }
     
