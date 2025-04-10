@@ -399,7 +399,7 @@ if (!shouldInitializeWidget()) {
             
             popup.innerHTML = `
                 <div class="heavyhaul-popup-header">
-                    <h3 class="heavyhaul-popup-title">HeavyHaulGBT Voice Assistant</h3>
+                    <h3 class="heavyhaul-popup-title">HeavyHaulGBT</h3>
                     <button class="heavyhaul-popup-close">&times;</button>
                 </div>
                 <div class="heavyhaul-popup-body">
