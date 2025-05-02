@@ -487,7 +487,7 @@
             } = elements;
                 
             // Using relative paths
-            const API_URL = 'https://heavy-haul-gbt.vercel.app';
+            const API_URL = 'https://heavyhaulgbt.com';
             
             // Speech recognition setup
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
