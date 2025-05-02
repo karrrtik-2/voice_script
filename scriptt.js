@@ -3,7 +3,6 @@
  * (c) 2025 HeavyHaul
  * Released under the MIT License
  */
-{
     (function() {
         // Create and inject CSS
         const style = document.createElement('style');
