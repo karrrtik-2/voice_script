@@ -631,7 +631,7 @@
                     conversationDiv, assistantForm, waveAnimation
                 } = elements;
     
-                const API_URL = 'http://127.0.0.1:8000'; // Replace with your actual API URL if needed
+                const API_URL = 'https://www.heavyhaulgbt.com'; // Replace with your actual API URL if needed
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 let recognition = null;
                 let isListening = false;
