@@ -1,5 +1,4 @@
-
-        (function() {
+(function() {
             // Create and inject CSS (Enhanced Theme that matches the website)
             const style = document.createElement('style');
             style.innerHTML = `
@@ -630,6 +629,27 @@
                     speakBtn, statusDiv, sessionIdInput, orderIdInput, browserIdInput,
                     conversationDiv, assistantForm, waveAnimation
                 } = elements;
+
+                // --- START: Added for word replacement ---
+                const wordReplacements = {
+                    "knight": "night",
+                    "excel": "axle",
+                    "voter": "order"
+                };
+
+                function applyWordReplacements(text) {
+                    let modifiedText = text;
+                    for (const originalWord in wordReplacements) {
+                        if (wordReplacements.hasOwnProperty(originalWord)) {
+                            const replacementWord = wordReplacements[originalWord];
+                            // Create a RegExp to match the original word, case-insensitive, whole word only
+                            const regex = new RegExp("\\b" + originalWord + "\\b", "gi");
+                            modifiedText = modifiedText.replace(regex, replacementWord);
+                        }
+                    }
+                    return modifiedText;
+                }
+                // --- END: Added for word replacement ---
     
                 const API_URL = 'https://www.heavyhaulgbt.com'; // Replace with your actual API URL if needed
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -833,9 +853,16 @@
     
                     // *** MODIFIED onresult ***
                     recognition.onresult = (event) => {
-                        const transcript = event.results[0][0].transcript.trim();
+                        let originalTranscript = event.results[0][0].transcript.trim();
+                        console.log('Original recognized speech:', originalTranscript);
+
+                        // Apply word replacements
+                        let transcript = applyWordReplacements(originalTranscript);
+                        if (transcript !== originalTranscript) {
+                            console.log('Replaced speech:', transcript);
+                        }
+    
                         const transcriptLower = transcript.toLowerCase();
-                        console.log('Recognized speech:', transcript);
     
                         // --- STOP CHECK (PRIORITY) ---
                         // Use includes() to catch "stop" within a sentence
@@ -872,7 +899,7 @@
                             } else {
                                 console.log("STOP command received, but no audio was playing.");
                                 // Tell the user that there's no audio playing
-                                addMessage("STOP", true);
+                                addMessage("STOP", true); // Show the "STOP" command (could be the modified one if "stop" was a replacement target)
                                 addMessage("There's no audio currently playing to stop.", false);
                                 
                                 // Restart recognition after a short delay
@@ -903,8 +930,8 @@
                         processingCommand = true; // Set flag: processing starts now
                         statusDiv.textContent = 'Processing...';
                         statusDiv.classList.add('heavyhaul-pulse');
-                        addMessage(transcript, true);
-                        processCommand(transcript);
+                        addMessage(transcript, true); // Use modified transcript
+                        processCommand(transcript); // Use modified transcript
                     };
     
                     // *** MODIFIED onerror ***
@@ -1036,7 +1063,7 @@
                 }
     
                 // Async function to process the recognized command
-                async function processCommand(command) {
+                async function processCommand(command) { // Command is already the modified one
                     const orderId = orderIdInput.value;
                     if (!orderId) {
                         statusDiv.textContent = 'Error: No Order ID.';
@@ -1298,9 +1325,16 @@
                     
                     // Reattach all event handlers with the same handlers as in initSpeechRecognition
                     recognition.onresult = (event) => {
-                        const transcript = event.results[0][0].transcript.trim();
+                        let originalTranscript = event.results[0][0].transcript.trim();
+                        console.log('Original recognized speech (reset engine):', originalTranscript);
+
+                        // Apply word replacements
+                        let transcript = applyWordReplacements(originalTranscript);
+                         if (transcript !== originalTranscript) {
+                            console.log('Replaced speech (reset engine):', transcript);
+                        }
+    
                         const transcriptLower = transcript.toLowerCase();
-                        console.log('Recognized speech:', transcript);
     
                         // --- STOP CHECK (PRIORITY) ---
                         if (transcriptLower.includes("stop")) {
@@ -1332,7 +1366,7 @@
                                 return;
                             } else {
                                 console.log("STOP command received, but no audio was playing.");
-                                addMessage("STOP", true);
+                                addMessage("STOP", true); // Use modified transcript
                                 addMessage("There's no audio currently playing to stop.", false);
                                 
                                 setTimeout(() => {
@@ -1358,8 +1392,8 @@
                         processingCommand = true;
                         statusDiv.textContent = 'Processing...';
                         statusDiv.classList.add('heavyhaul-pulse');
-                        addMessage(transcript, true);
-                        processCommand(transcript);
+                        addMessage(transcript, true); // Use modified transcript
+                        processCommand(transcript); // Use modified transcript
                     };
     
                     recognition.onerror = (event) => {
