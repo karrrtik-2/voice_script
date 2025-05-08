@@ -700,7 +700,7 @@ animation: heavyhaul-float 3s ease-in-out infinite;
                 if (mode === 'order') {
                     addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with your order?", false, null, elements);
                 } else {
-                    addMessage("Hello! I'm your HeavyHaulGBT assistant. Welcome to State Regulations mode.", false, null, elements);
+                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can i help you with State Regulations.", false, null, elements);
                 }
                 
                 // Close the menu
@@ -903,7 +903,7 @@ animation: heavyhaul-float 3s ease-in-out infinite;
         }
 
         const statusDiv = document.getElementById('heavyhaul-status');
-        const API_URL = 'http://127.0.0.1:8000';
+        const API_URL = 'https://www.heavyhaulgbt.com';
 
         // Get current state for this message
         const currentState = window.messageFeedbackState[messageId];
@@ -920,7 +920,7 @@ animation: heavyhaul-float 3s ease-in-out infinite;
         }
 
         try {
-            const response = await fetch(`${API_URL}/api/feedback`, {
+            const response = await fetch(`${}/api/feedback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -981,7 +981,7 @@ animation: heavyhaul-float 3s ease-in-out infinite;
         }
         // --- END: Added for word replacement ---
 
-        const API_URL = 'http://127.0.0.1:8000'; // Replace with your actual API URL if needed
+        const API_URL = 'https://www.heavyhaulgbt.com'; // Replace with your actual API URL if needed
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let isListening = false;
@@ -1733,7 +1733,7 @@ animation: heavyhaul-float 3s ease-in-out infinite;
         if (initialChatMode === 'order') {
             addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with your order?", false, null, elements);
         } else {
-            addMessage("Hello! I'm your HeavyHaulGBT assistant. Welcome to State Regulations mode.", false, null, elements);
+            addMessage("Hello! I'm your HeavyHaulGBT assistant. How can i help you with State Regulations.", false, null, elements);
         }
 
     } // End of initVoiceAssistant
