@@ -1,27 +1,27 @@
-        (function() {
-            // Create and inject CSS (Enhanced Theme that matches the website)
-            const style = document.createElement('style');
-            style.innerHTML = `
-            .heavyhaul-assistant-widget {
-                /* Enhanced Color Theme to match website */
-                --bg-dark: #1c2230;
-                --bg-card: #2a3042;
-                --text-light: #f0f2f5;
-                --text-secondary: #a0aec0;
-                --primary: #5466ff;
-                --primary-hover: #4355ee;
-                --accent: #5466ff;
-                --accent-light: #5466ff20;
-                --green: #27ae60;
-                --red: #e74c3c;
-                --red-hover: #c0392b;
-                --yellow: #f39c12;
-                --border-color: #3d4355;
-                --input-bg: #202636;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                color: var(--text-light);
-                z-index: 99999;
-            }
+(function() {
+    // Create and inject CSS (Enhanced Theme that matches the website)
+    const style = document.createElement('style');
+    style.innerHTML = `
+    .heavyhaul-assistant-widget {
+        /* Enhanced Color Theme to match website */
+        --bg-dark: #1c2230;
+        --bg-card: #2a3042;
+        --text-light: #f0f2f5;
+        --text-secondary: #a0aec0;
+        --primary: #5466ff;
+        --primary-hover: #4355ee;
+        --accent: #5466ff;
+        --accent-light: #5466ff20;
+        --green: #27ae60;
+        --red: #e74c3c;
+        --red-hover: #c0392b;
+        --yellow: #f39c12;
+        --border-color: #3d4355;
+        --input-bg: #202636;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text-light);
+        z-index: 99999;
+    }
 
 
 /* Enhanced Floating button with pulse animation */
