@@ -1,4 +1,4 @@
-(function() {
+        (function() {
             // Create and inject CSS (Enhanced Theme that matches the website)
             const style = document.createElement('style');
             style.innerHTML = `
@@ -687,7 +687,7 @@ animation: heavyhaul-float 3s ease-in-out infinite;
                     // In order mode, mic should be disabled if no order ID
                     elements.speakBtn.disabled = !CURRENT_ORDER_ID;
                 } else {
-                    elements.statusDiv.textContent = 'State Regulations mode active. Ask about permits and regulations.';
+                    elements.statusDiv.textContent = 'Start asking about your route or any state regulations.';
                     
                     // In state mode, mic should always be enabled
                     elements.speakBtn.disabled = false;
@@ -920,7 +920,7 @@ animation: heavyhaul-float 3s ease-in-out infinite;
         }
 
         try {
-            const response = await fetch(`${}/api/feedback`, {
+            const response = await fetch(`${API_URL}/api/feedback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
