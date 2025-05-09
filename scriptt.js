@@ -450,14 +450,14 @@
             align-items: center;
             justify-content: center;
             margin-right: 6px;
-            width: 19px;
-            height: 19px;
+            width: 18px;
+            height: 18px;
             position: relative;
         }
     
         .heavyhaul-mic-icon svg {
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
             fill: currentColor;
             transition: transform 0.2s ease;
         }
