@@ -13,7 +13,7 @@ A voice-activated assistant widget for HeavyHaul transportation services that ca
 
 ## Demo
 
-See the [live demo](https://github.com/karrrtik-2/voice_script/index.html)
+See the [live demo](https://karrrtik-2.github.io/voice_script/?order_id=DEMO-12345)
 
 ## Installation
 
