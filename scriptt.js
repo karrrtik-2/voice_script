@@ -243,6 +243,7 @@
             justify-content: center;
             margin: -2px 0 9px; /* Changed from 15px 0 - moves it 10px up */
             flex-shrink: 0;
+            gap: 10px; /* Added gap for upload button */
         }
     
         .heavyhaul-button {
@@ -299,6 +300,91 @@
     
         .heavyhaul-button.listening:hover {
             background: linear-gradient(135deg, var(--red-hover) 0%, var(--red) 100%);
+        }
+        
+        /* Upload button style */
+        .heavyhaul-upload-btn {
+            padding: 12px;
+            background: linear-gradient(135deg, var(--green) 0%, #159648 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            transform: translateZ(0);
+            width: 48px;
+            height: 48px;
+        }
+        
+        .heavyhaul-upload-btn:hover {
+            background: linear-gradient(135deg, #159648 0%, var(--green) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 14px rgba(39, 174, 96, 0.4);
+        }
+        
+        .heavyhaul-upload-btn:disabled {
+            background: linear-gradient(135deg, #7a7a7a 0%, #5a5a5a 100%);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        .heavyhaul-upload-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+        
+        /* Hidden file input */
+        .heavyhaul-file-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        /* Image preview container */
+        .heavyhaul-image-preview {
+            display: none;
+            margin-bottom: 12px;
+            max-height: 150px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .heavyhaul-image-preview img {
+            max-height: 150px;
+            max-width: 100%;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+        }
+        
+        .heavyhaul-image-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: var(--red);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
     
         .heavyhaul-status {
@@ -546,6 +632,7 @@
     // SVG icon strings for reuse
     const MIC_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>';
     const MENU_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
+    const UPLOAD_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>';
 
     // Function to extract query param
     function getQueryParam(param) {
@@ -585,6 +672,10 @@
                         State Regulations
                         <span class="heavyhaul-chat-mode-indicator"></span>
                     </div>
+                    <div class="heavyhaul-chat-mode-option" data-mode="fmcsa">
+                        FMCSA Regulations
+                        <span class="heavyhaul-chat-mode-indicator"></span>
+                    </div>
                 </div>
             </div>
             <div class="heavyhaul-popup-body">
@@ -593,6 +684,12 @@
                     <input type="hidden" id="heavyhaul-session-id">
                     <input type="hidden" id="heavyhaul-browser-id">
                     <input type="hidden" id="heavyhaul-chat-mode" value="order">
+                    
+                    <!-- Image preview section (initially hidden) -->
+                    <div id="heavyhaul-image-preview" class="heavyhaul-image-preview">
+                        <img id="heavyhaul-preview-img" src="#" alt="Upload preview">
+                        <button id="heavyhaul-image-remove" class="heavyhaul-image-remove" title="Remove image">×</button>
+                    </div>
 
                     <div class="heavyhaul-button-container">
                         <button id="heavyhaul-speak-btn" type="button" class="heavyhaul-button">
@@ -602,6 +699,12 @@
                                 <span></span><span></span><span></span><span></span><span></span>
                             </div>
                         </button>
+                        
+                        <!-- Upload button (initially hidden, will show for FMCSA mode) -->
+                        <label for="heavyhaul-file-input" id="heavyhaul-upload-label" class="heavyhaul-upload-btn" style="display: none;" title="Upload Image">
+                            ${UPLOAD_ICON}
+                        </label>
+                        <input type="file" id="heavyhaul-file-input" class="heavyhaul-file-input" accept="image/*">
                     </div>
                 </form>
 
@@ -633,7 +736,12 @@
             chatModeInput: document.getElementById('heavyhaul-chat-mode'),
             conversationDiv: document.getElementById('heavyhaul-conversation'),
             assistantForm: document.getElementById('heavyhaul-assistant-form'),
-            waveAnimation: popup.querySelector('.heavyhaul-wave-animation')
+            waveAnimation: popup.querySelector('.heavyhaul-wave-animation'),
+            fileInput: document.getElementById('heavyhaul-file-input'),
+            uploadLabel: document.getElementById('heavyhaul-upload-label'),
+            imagePreview: document.getElementById('heavyhaul-image-preview'),
+            previewImg: document.getElementById('heavyhaul-preview-img'),
+            imageRemoveBtn: document.getElementById('heavyhaul-image-remove')
         };
     }
 
@@ -665,6 +773,25 @@
             }
         });
 
+        // Handle file input change
+        elements.fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    elements.previewImg.src = e.target.result;
+                    elements.imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Handle image remove button
+        elements.imageRemoveBtn.addEventListener('click', function() {
+            elements.fileInput.value = ''; // Clear file input
+            elements.imagePreview.style.display = 'none';
+        });
+
         // Handle chat mode selection
         elements.chatModeOptions.forEach(option => {
             option.addEventListener('click', () => {
@@ -678,6 +805,16 @@
                 // Update hidden input
                 elements.chatModeInput.value = mode;
                 
+                // Show/hide upload button based on mode
+                if (mode === 'fmcsa') {
+                    elements.uploadLabel.style.display = 'flex';
+                } else {
+                    elements.uploadLabel.style.display = 'none';
+                    // Clear any uploaded image when switching away from FMCSA mode
+                    elements.fileInput.value = '';
+                    elements.imagePreview.style.display = 'none';
+                }
+                
                 // Update status message
                 if (mode === 'order') {
                     elements.statusDiv.textContent = CURRENT_ORDER_ID
@@ -686,10 +823,15 @@
                     
                     // In order mode, mic should be disabled if no order ID
                     elements.speakBtn.disabled = !CURRENT_ORDER_ID;
-                } else {
+                } else if (mode === 'state') {
                     elements.statusDiv.textContent = 'Start asking about your route or any state regulations.';
                     
                     // In state mode, mic should always be enabled
+                    elements.speakBtn.disabled = false;
+                } else if (mode === 'fmcsa') {
+                    elements.statusDiv.textContent = 'Ask about FMCSA regulations or upload an image for analysis.';
+                    
+                    // In FMCSA mode, mic should always be enabled
                     elements.speakBtn.disabled = false;
                 }
                 
@@ -699,8 +841,10 @@
                 // Add initial greeting based on mode
                 if (mode === 'order') {
                     addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with your order?", false, null, elements);
-                } else {
-                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can i help you with State Regulations.", false, null, elements);
+                } else if (mode === 'state') {
+                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with State Regulations?", false, null, elements);
+                } else if (mode === 'fmcsa') {
+                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with FMCSA Regulations? You can also upload images of cargo securement for analysis.", false, null, elements);
                 }
                 
                 // Close the menu
@@ -827,6 +971,7 @@
         const feedbackContainer = button.closest('.heavyhaul-feedback-buttons');
         const messageId = feedbackContainer.dataset.messageId;
         const sessionIdInput = document.getElementById('heavyhaul-session-id');
+        const chatMode = document.getElementById('heavyhaul-chat-mode').value;
         const sessionId = sessionIdInput ? (sessionIdInput.value.trim() || localStorage.getItem(`heavyhaul_session_${document.getElementById('heavyhaul-order-id').value}_${document.getElementById('heavyhaul-browser-id').value}`)) : null;
 
         // Initialize messageFeedbackState if it doesn't exist
@@ -891,12 +1036,12 @@
         // --- Send combined feedback state to server ---
         // Only send if something was actually selected/entered in *this* interaction
         if (ratingValue !== null || userCommentText !== null) {
-            await sendFeedbackToServer(sessionId, messageId);
+            await sendFeedbackToServer(sessionId, messageId, chatMode);
         }
     }
 
     // --- Async function to send the CURRENT feedback state to the backend ---
-    async function sendFeedbackToServer(sessionId, messageId) {
+    async function sendFeedbackToServer(sessionId, messageId, chatMode) {
         if (!window.messageFeedbackState || !window.messageFeedbackState[messageId]) {
             console.error("Cannot send feedback, state missing for message:", messageId);
             return;
@@ -919,8 +1064,11 @@
             statusDiv.classList.add('heavyhaul-pulse');
         }
 
+        // Use the appropriate feedback endpoint based on chat mode
+        const feedbackEndpoint = chatMode === 'fmcsa' ? '/api/fmcsafeedback' : '/api/feedback';
+
         try {
-            const response = await fetch(`${API_URL}/api/feedback`, {
+            const response = await fetch(`${API_URL}${feedbackEndpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -957,7 +1105,8 @@
     function initVoiceAssistant(elements) {
         const {
             speakBtn, statusDiv, sessionIdInput, orderIdInput, browserIdInput,
-            conversationDiv, assistantForm, waveAnimation, chatModeInput
+            conversationDiv, assistantForm, waveAnimation, chatModeInput,
+            fileInput, uploadLabel, imagePreview, previewImg, imageRemoveBtn
         } = elements;
 
         // --- START: Added for word replacement ---
@@ -994,6 +1143,7 @@
         // Initialize separate session IDs for different modes
         let orderSessionId = localStorage.getItem(`heavyhaul_session_${orderID}_${browserID}`) || null;
         let stateSessionId = localStorage.getItem(`heavyhaul_state_session_${browserID}`) || null;
+        let fmcsaSessionId = localStorage.getItem(`heavyhaul_fmcsa_session_${browserID}`) || null;
         
         let currentAudioSource = null;
         let audioContext = null;
@@ -1010,11 +1160,10 @@
             const mode = chatModeInput.value || 'order';
             if (mode === 'order') {
                 currentSessionId = orderSessionId;
-            } else { // mode === 'state'
-                // If stateSessionId exists, use it.
-                // Otherwise, if orderSessionId exists, use that as a fallback.
-                // If neither exists, currentSessionId will be null.
-                currentSessionId = stateSessionId || orderSessionId; 
+            } else if (mode === 'state') {
+                currentSessionId = stateSessionId || orderSessionId;
+            } else if (mode === 'fmcsa') {
+                currentSessionId = fmcsaSessionId || stateSessionId || orderSessionId;
             }
 
             if (currentSessionId) {
@@ -1271,18 +1420,100 @@
             const browserFingerprint = browserIdInput.value;
             
             // Choose the endpoint based on chat mode
-            const endpoint = chatMode === 'order' ? '/chat' : '/chatstate';
+            let endpoint;
+            let requestData;
             
-            // Construct the request 
-            const requestData = { 
-                message: command,
-                session_id: sessionIdForRequest 
-            };
-            
-            // Add order_id only for order mode, browser_fingerprint only for order mode
-            if (chatMode === 'order') {
-                requestData.order_id = orderIdVal;
-                requestData.browser_fingerprint = browserFingerprint;
+            if (chatMode === 'fmcsa') {
+                endpoint = '/fmcsabot';
+                
+                // For FMCSA with image upload, we need to use FormData
+                if (fileInput.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append('session_id', sessionIdForRequest);
+                    formData.append('query', command);
+                    formData.append('file', fileInput.files[0]);
+                    
+                    // Special handling for FormData request
+                    try {
+                        console.log(`Sending to ${endpoint} with image:`, formData);
+                        
+                        statusDiv.textContent = 'Processing image and query...';
+                        
+                        const response = await fetch(`${API_URL}${endpoint}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (!response.ok) {
+                            try {
+                                const error = await response.json();
+                                throw new Error(error.error || `API ${response.status}`);
+                            } catch (err) {
+                                throw new Error(`API ${response.status}`);
+                            }
+                        }
+                        
+                        const data = await response.json();
+                        console.log(`${endpoint} response:`, data);
+                        
+                        // Update session ID
+                        if (data.session_id) {
+                            const returnedSessionId = data.session_id;
+                            sessionIdInput.value = returnedSessionId;
+                            
+                            if (fmcsaSessionId !== returnedSessionId) {
+                                fmcsaSessionId = returnedSessionId;
+                                localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, returnedSessionId);
+                                console.log(`FMCSA Session ID updated:`, returnedSessionId);
+                            }
+                            
+                            currentSessionId = returnedSessionId;
+                        }
+                        
+                        // Clear the file input after processing
+                        fileInput.value = '';
+                        imagePreview.style.display = 'none';
+                        
+                        // Display assistant's response
+                        addMessage(data.response, false, data.message_id, elements);
+                        
+                        // Generate and play audio
+                        await playAudioResponse(data);
+                        
+                    } catch (error) {
+                        console.error('Error processing FMCSA with image:', error);
+                        addMessage(`Sorry, I encountered an error: ${error.message || error}`, false, null, elements);
+                        statusDiv.textContent = `Error: ${error.message || error}. Ready...`;
+                        statusDiv.classList.remove('heavyhaul-pulse');
+                        processingCommand = false;
+                        
+                        if (isListening) {
+                            setTimeout(() => safeStartRecognition(), 300);
+                        }
+                    }
+                    
+                    return; // Exit early after image processing
+                } else {
+                    // Normal JSON request for FMCSA without image
+                    requestData = { 
+                        query: command,
+                        session_id: sessionIdForRequest 
+                    };
+                }
+            } else if (chatMode === 'order') {
+                endpoint = '/chat';
+                requestData = { 
+                    message: command,
+                    session_id: sessionIdForRequest,
+                    order_id: orderIdVal,
+                    browser_fingerprint: browserFingerprint
+                };
+            } else { // chatMode === 'state'
+                endpoint = '/chatstate';
+                requestData = { 
+                    message: command,
+                    session_id: sessionIdForRequest 
+                };
             }
 
             // Initialize AudioContext if not already done
@@ -1329,12 +1560,9 @@
                 console.log(`${endpoint} response:`, data);
                 
                 // Update session ID if needed from the response
-                // currentSessionId here refers to the one *before* this API call if data.session_id is new
-                // or the one that was sent if data.session_id is the same or not present.
-                // The important part is updating the *mode-specific* session ID (orderSessionId or stateSessionId)
-                if (data.session_id) { // Check if server returned a session_id
+                if (data.session_id) {
                     const returnedSessionId = data.session_id;
-                    sessionIdInput.value = returnedSessionId; // Update input field immediately
+                    sessionIdInput.value = returnedSessionId;
 
                     if (chatMode === 'order') {
                         if (orderSessionId !== returnedSessionId) {
@@ -1342,143 +1570,28 @@
                             localStorage.setItem(`heavyhaul_session_${orderIdVal}_${browserID}`, returnedSessionId);
                             console.log(`Order Session ID updated:`, returnedSessionId);
                         }
-                    } else { // chatMode === 'state'
+                    } else if (chatMode === 'state') {
                         if (stateSessionId !== returnedSessionId) {
                             stateSessionId = returnedSessionId;
                             localStorage.setItem(`heavyhaul_state_session_${browserID}`, returnedSessionId);
                             console.log(`State Session ID updated:`, returnedSessionId);
                         }
+                    } else if (chatMode === 'fmcsa') {
+                        if (fmcsaSessionId !== returnedSessionId) {
+                            fmcsaSessionId = returnedSessionId;
+                            localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, returnedSessionId);
+                            console.log(`FMCSA Session ID updated:`, returnedSessionId);
+                        }
                     }
-                    // Update currentSessionId to reflect the one actually active *after* this exchange
-                    currentSessionId = returnedSessionId; 
+                    currentSessionId = returnedSessionId;
                 }
-
 
                 // Display assistant's response
                 addMessage(data.response, false, data.message_id, elements);
 
-                // Generate and play audio response if available
-                if (data.audio_endpoint && audioContext) {
-                    statusDiv.textContent = 'Generating audio...';
-                    
-                    // Call the audio generation API
-                    const audioResponse = await fetch(`${API_URL}${data.audio_endpoint}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: data.response })
-                    });
-                    
-                    if (!audioResponse.ok) {
-                        try {
-                            const error = await audioResponse.json();
-                            throw new Error(error.error || `Audio API ${audioResponse.status}`);
-                        } catch (err) {
-                            throw new Error(`Audio API ${audioResponse.status}`);
-                        }
-                    }
-                    
-                    statusDiv.textContent = 'Decoding audio...';
-                    const arrayBuffer = await audioResponse.arrayBuffer();
-                    
-                    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-                        throw new Error('Empty audio buffer');
-                    }
-                    
-                    // Decode the audio data
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    
-                    if (!audioBuffer) {
-                        throw new Error('Audio decoding failed');
-                    }
-                    
-                    console.log('Audio decoded, preparing to play...');
-                    await stopAudioPlayback(); // Stop any previous audio
-
-                    // Create new audio source and play
-                    const source = audioContext.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.connect(audioContext.destination);
-
-                    currentAudioSource = source;
-                    isAudioPlaying = true;
-
-                    statusDiv.textContent = 'Playing... (Say "STOP" to interrupt)';
-                    statusDiv.classList.remove('heavyhaul-pulse');
-
-                    // Try to start recognition during playback to enable "stop" commands
-                    if (isListening && recognition) {
-                        console.log("Attempting to start recognition during playback...");
-                        try { 
-                            recognition.start(); 
-                        } catch(e) { 
-                            console.warn("Rec start during playback failed:", e.name);
-                            // Try again after a small delay - this helps with some browsers
-                            setTimeout(() => {
-                                if (isListening && isAudioPlaying) {
-                                    try {
-                                        recognition.start();
-                                        console.log("Delayed start of recognition during playback succeeded");
-                                    } catch(e2) {
-                                        console.warn("Delayed rec start during playback also failed:", e2.name);
-                                    }
-                                }
-                            }, 200);
-                        }
-                    }
-
-                    // Handle audio playback ending
-                    source.onended = () => {
-                        console.log('Playback finished or stopped.');
-                        const localSourceRef = source;
-                        const wasStoppedManually = !currentAudioSource || currentAudioSource !== localSourceRef;
-
-                        if (currentAudioSource === localSourceRef) {
-                            currentAudioSource = null;
-                            isAudioPlaying = false;
-
-                            if (!wasStoppedManually) {
-                                console.log("Audio ended naturally.");
-                                processingCommand = false;
-                                if (isListening) {
-                                    console.log("Audio ended naturally: Triggering recognition restart.");
-                                    try {
-                                        recognition.stop();
-                                    } catch (e) {
-                                        console.warn("Error stopping recognition after natural audio end:", e);
-                                    }
-                                    
-                                    setTimeout(() => {
-                                        if (isListening && !isAudioPlaying && !processingCommand) {
-                                            safeStartRecognition();
-                                        }
-                                    }, 300);
-                                } else {
-                                    statusDiv.textContent = 'Ready.';
-                                }
-                            } else {
-                                console.log("Audio was stopped manually. Restart handled by recognition.onend.");
-                                if(isListening) {
-                                    statusDiv.textContent = 'Listening...';
-                                } else {
-                                    statusDiv.textContent = 'Audio stopped.';
-                                }
-                            }
-                        } else {
-                            console.log("onended fired for an old/stopped audio source. Ignoring.");
-                        }
-                    };
-
-                    source.start(0); // Start playing the audio
-                } else {
-                    console.log("Skipping audio generation/playback.");
-                    statusDiv.textContent = 'Ready.';
-                    statusDiv.classList.remove('heavyhaul-pulse');
-                    processingCommand = false;
-                    
-                    if (isListening) {
-                        setTimeout(() => safeStartRecognition(), 300);
-                    }
-                }
+                // Generate and play audio response
+                await playAudioResponse(data);
+                
             } catch (error) {
                 if (error.message !== 'No audio endpoint' && 
                     error.message !== 'No audio response object' && 
@@ -1503,6 +1616,132 @@
                             safeStartRecognition();
                         }
                     }, 300);
+                }
+            }
+        }
+        
+        // Function to generate and play audio response
+        async function playAudioResponse(data) {
+            // Generate and play audio response if available
+            if (data.audio_endpoint && audioContext) {
+                statusDiv.textContent = 'Generating audio...';
+                
+                // Call the audio generation API
+                const audioResponse = await fetch(`${API_URL}${data.audio_endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: data.response })
+                });
+                
+                if (!audioResponse.ok) {
+                    try {
+                        const error = await audioResponse.json();
+                        throw new Error(error.error || `Audio API ${audioResponse.status}`);
+                    } catch (err) {
+                        throw new Error(`Audio API ${audioResponse.status}`);
+                    }
+                }
+                
+                statusDiv.textContent = 'Decoding audio...';
+                const arrayBuffer = await audioResponse.arrayBuffer();
+                
+                if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+                    throw new Error('Empty audio buffer');
+                }
+                
+                // Decode the audio data
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                if (!audioBuffer) {
+                    throw new Error('Audio decoding failed');
+                }
+                
+                console.log('Audio decoded, preparing to play...');
+                await stopAudioPlayback(); // Stop any previous audio
+
+                // Create new audio source and play
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+
+                currentAudioSource = source;
+                isAudioPlaying = true;
+
+                statusDiv.textContent = 'Playing... (Say "STOP" to interrupt)';
+                statusDiv.classList.remove('heavyhaul-pulse');
+
+                // Try to start recognition during playback to enable "stop" commands
+                if (isListening && recognition) {
+                    console.log("Attempting to start recognition during playback...");
+                    try { 
+                        recognition.start(); 
+                    } catch(e) { 
+                        console.warn("Rec start during playback failed:", e.name);
+                        // Try again after a small delay - this helps with some browsers
+                        setTimeout(() => {
+                            if (isListening && isAudioPlaying) {
+                                try {
+                                    recognition.start();
+                                    console.log("Delayed start of recognition during playback succeeded");
+                                } catch(e2) {
+                                    console.warn("Delayed rec start during playback also failed:", e2.name);
+                                }
+                            }
+                        }, 200);
+                    }
+                }
+
+                // Handle audio playback ending
+                source.onended = () => {
+                    console.log('Playback finished or stopped.');
+                    const localSourceRef = source;
+                    const wasStoppedManually = !currentAudioSource || currentAudioSource !== localSourceRef;
+
+                    if (currentAudioSource === localSourceRef) {
+                        currentAudioSource = null;
+                        isAudioPlaying = false;
+
+                        if (!wasStoppedManually) {
+                            console.log("Audio ended naturally.");
+                            processingCommand = false;
+                            if (isListening) {
+                                console.log("Audio ended naturally: Triggering recognition restart.");
+                                try {
+                                    recognition.stop();
+                                } catch (e) {
+                                    console.warn("Error stopping recognition after natural audio end:", e);
+                                }
+                                
+                                setTimeout(() => {
+                                    if (isListening && !isAudioPlaying && !processingCommand) {
+                                        safeStartRecognition();
+                                    }
+                                }, 300);
+                            } else {
+                                statusDiv.textContent = 'Ready.';
+                            }
+                        } else {
+                            console.log("Audio was stopped manually. Restart handled by recognition.onend.");
+                            if(isListening) {
+                                statusDiv.textContent = 'Listening...';
+                            } else {
+                                statusDiv.textContent = 'Audio stopped.';
+                            }
+                        }
+                    } else {
+                        console.log("onended fired for an old/stopped audio source. Ignoring.");
+                    }
+                };
+
+                source.start(0); // Start playing the audio
+            } else {
+                console.log("Skipping audio generation/playback.");
+                statusDiv.textContent = 'Ready.';
+                statusDiv.classList.remove('heavyhaul-pulse');
+                processingCommand = false;
+                
+                if (isListening) {
+                    setTimeout(() => safeStartRecognition(), 300);
                 }
             }
         }
