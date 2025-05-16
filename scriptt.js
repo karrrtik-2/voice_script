@@ -829,7 +829,7 @@
                     // In state mode, mic should always be enabled
                     elements.speakBtn.disabled = false;
                 } else if (mode === 'fmcsa') {
-                    elements.statusDiv.textContent = 'Ask about Safety regulations or upload an image for analysis.';
+                    elements.statusDiv.textContent = 'Ask about FMCSA regulations or upload an image for analysis.';
                     
                     // In FMCSA mode, mic should always be enabled
                     elements.speakBtn.disabled = false;
@@ -844,7 +844,7 @@
                 } else if (mode === 'state') {
                     addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with State Regulations?", false, null, elements);
                 } else if (mode === 'fmcsa') {
-                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with Safety Regulations? You can also upload image of cargo for analysis.", false, null, elements);
+                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with FMCSA Regulations? You can also upload images of cargo securement for analysis.", false, null, elements);
                 }
                 
                 // Close the menu
@@ -971,8 +971,7 @@
         const feedbackContainer = button.closest('.heavyhaul-feedback-buttons');
         const messageId = feedbackContainer.dataset.messageId;
         const sessionIdInput = document.getElementById('heavyhaul-session-id');
-        const chatMode = document.getElementById('heavyhaul-chat-mode').value;
-        const sessionId = sessionIdInput ? (sessionIdInput.value.trim() || localStorage.getItem(`heavyhaul_session_${document.getElementById('heavyhaul-order-id').value}_${document.getElementById('heavyhaul-browser-id').value}`)) : null;
+        const sessionId = sessionIdInput ? sessionIdInput.value.trim() : null;
 
         // Initialize messageFeedbackState if it doesn't exist
         if (typeof window.messageFeedbackState === 'undefined') {
@@ -1036,12 +1035,12 @@
         // --- Send combined feedback state to server ---
         // Only send if something was actually selected/entered in *this* interaction
         if (ratingValue !== null || userCommentText !== null) {
-            await sendFeedbackToServer(sessionId, messageId, chatMode);
+            await sendFeedbackToServer(sessionId, messageId);
         }
     }
 
     // --- Async function to send the CURRENT feedback state to the backend ---
-    async function sendFeedbackToServer(sessionId, messageId, chatMode) {
+    async function sendFeedbackToServer(sessionId, messageId) {
         if (!window.messageFeedbackState || !window.messageFeedbackState[messageId]) {
             console.error("Cannot send feedback, state missing for message:", messageId);
             return;
@@ -1064,8 +1063,8 @@
             statusDiv.classList.add('heavyhaul-pulse');
         }
 
-        // Use the appropriate feedback endpoint based on chat mode
-        const feedbackEndpoint = chatMode === 'fmcsa' ? '/api/fmcsafeedback' : '/api/feedback';
+        // Use the same feedback endpoint for all modes
+        const feedbackEndpoint = '/api/feedback';
 
         try {
             const response = await fetch(`${API_URL}${feedbackEndpoint}`, {
@@ -1161,9 +1160,9 @@
             if (mode === 'order') {
                 currentSessionId = orderSessionId;
             } else if (mode === 'state') {
-                currentSessionId = stateSessionId || orderSessionId;
+                currentSessionId = stateSessionId;
             } else if (mode === 'fmcsa') {
-                currentSessionId = fmcsaSessionId || stateSessionId || orderSessionId;
+                currentSessionId = fmcsaSessionId;
             }
 
             if (currentSessionId) {
@@ -1415,8 +1414,9 @@
                 return;
             }
 
-            updateSessionIdBasedOnMode(); // Crucial: sets currentSessionId and sessionIdInput.value based on current chatMode and existing sessionIds
-            const sessionIdForRequest = sessionIdInput.value.trim() || currentSessionId; // Use the value from input, fallback to currentSessionId (which was just updated)
+            // Get the current session ID before making the request
+            updateSessionIdBasedOnMode();
+            let sessionIdForRequest = sessionIdInput.value.trim();
             const browserFingerprint = browserIdInput.value;
             
             // Choose the endpoint based on chat mode
@@ -1456,18 +1456,12 @@
                         const data = await response.json();
                         console.log(`${endpoint} response:`, data);
                         
-                        // Update session ID
-                        if (data.session_id) {
-                            const returnedSessionId = data.session_id;
-                            sessionIdInput.value = returnedSessionId;
-                            
-                            if (fmcsaSessionId !== returnedSessionId) {
-                                fmcsaSessionId = returnedSessionId;
-                                localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, returnedSessionId);
-                                console.log(`FMCSA Session ID updated:`, returnedSessionId);
-                            }
-                            
-                            currentSessionId = returnedSessionId;
+                        // Update session ID if provided and different
+                        if (data.session_id && (!sessionIdForRequest || data.session_id !== sessionIdForRequest)) {
+                            fmcsaSessionId = data.session_id;
+                            localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, fmcsaSessionId);
+                            console.log(`FMCSA Session ID updated:`, fmcsaSessionId);
+                            sessionIdInput.value = fmcsaSessionId;
                         }
                         
                         // Clear the file input after processing
@@ -1559,31 +1553,24 @@
                 const data = await response.json();
                 console.log(`${endpoint} response:`, data);
                 
-                // Update session ID if needed from the response
-                if (data.session_id) {
-                    const returnedSessionId = data.session_id;
-                    sessionIdInput.value = returnedSessionId;
-
+                // Update session ID if provided and different from the request
+                if (data.session_id && (!sessionIdForRequest || data.session_id !== sessionIdForRequest)) {
                     if (chatMode === 'order') {
-                        if (orderSessionId !== returnedSessionId) {
-                            orderSessionId = returnedSessionId;
-                            localStorage.setItem(`heavyhaul_session_${orderIdVal}_${browserID}`, returnedSessionId);
-                            console.log(`Order Session ID updated:`, returnedSessionId);
-                        }
+                        orderSessionId = data.session_id;
+                        localStorage.setItem(`heavyhaul_session_${orderIdVal}_${browserID}`, orderSessionId);
+                        console.log(`Order Session ID updated:`, orderSessionId);
+                        sessionIdInput.value = orderSessionId;
                     } else if (chatMode === 'state') {
-                        if (stateSessionId !== returnedSessionId) {
-                            stateSessionId = returnedSessionId;
-                            localStorage.setItem(`heavyhaul_state_session_${browserID}`, returnedSessionId);
-                            console.log(`State Session ID updated:`, returnedSessionId);
-                        }
+                        stateSessionId = data.session_id;
+                        localStorage.setItem(`heavyhaul_state_session_${browserID}`, stateSessionId);
+                        console.log(`State Session ID updated:`, stateSessionId);
+                        sessionIdInput.value = stateSessionId;
                     } else if (chatMode === 'fmcsa') {
-                        if (fmcsaSessionId !== returnedSessionId) {
-                            fmcsaSessionId = returnedSessionId;
-                            localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, returnedSessionId);
-                            console.log(`FMCSA Session ID updated:`, returnedSessionId);
-                        }
+                        fmcsaSessionId = data.session_id;
+                        localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, fmcsaSessionId);
+                        console.log(`FMCSA Session ID updated:`, fmcsaSessionId);
+                        sessionIdInput.value = fmcsaSessionId;
                     }
-                    currentSessionId = returnedSessionId;
                 }
 
                 // Display assistant's response
