@@ -844,7 +844,7 @@
                 } else if (mode === 'state') {
                     addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with State Regulations?", false, null, elements);
                 } else if (mode === 'fmcsa') {
-                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with FMCSA Regulations? You can also upload images of cargo securement for analysis.", false, null, elements);
+                    addMessage("Hello! I'm your HeavyHaulGBT assistant. How can I help you with Safety Regulations? You can also upload image of cargo for analysis.", false, null, elements);
                 }
                 
                 // Close the menu
