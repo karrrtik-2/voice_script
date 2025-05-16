@@ -829,7 +829,7 @@
                     // In state mode, mic should always be enabled
                     elements.speakBtn.disabled = false;
                 } else if (mode === 'fmcsa') {
-                    elements.statusDiv.textContent = 'Ask about FMCSA regulations or upload an image for analysis.';
+                    elements.statusDiv.textContent = 'Ask about Safety regulations or upload an image for analysis.';
                     
                     // In FMCSA mode, mic should always be enabled
                     elements.speakBtn.disabled = false;
