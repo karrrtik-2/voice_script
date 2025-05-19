@@ -1,4 +1,14 @@
-(function() {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeavyHaul Widget Test</title>
+</head>
+<body>
+    <h1>HeavyHaul Voice Assistant Widget Test</h1>
+    <p>This is a test page for the HeavyHaul voice assistant widget.</p>
+    <script> (function() {
         // Create and inject CSS (Enhanced Theme that matches the website)
         const style = document.createElement('style');
         style.innerHTML = `
@@ -1063,7 +1073,7 @@
             statusDiv.classList.add('heavyhaul-pulse');
         }
 
-        // Always use the standard feedback endpoint
+        // Use the same feedback endpoint for all modes
         const feedbackEndpoint = '/api/feedback';
 
         try {
@@ -1138,19 +1148,11 @@
         // Use a composite key for session storage: orderID_browserID or browserID for state mode
         const browserID = browserIdInput.value;
         const orderID = orderIdInput.value;
-        
-        // Initialize session IDs for different modes
-        // Use the browser ID as part of the key for all session types
-        const orderSessionKey = `heavyhaul_session_${orderID}_${browserID}`;
-        const stateSessionKey = `heavyhaul_state_session_${browserID}`;
-        const fmcsaSessionKey = `heavyhaul_fmcsa_session_${browserID}`;
-        
-        let orderSessionId = localStorage.getItem(orderSessionKey) || null;
-        let stateSessionId = localStorage.getItem(stateSessionKey) || null;
-        let fmcsaSessionId = localStorage.getItem(fmcsaSessionKey) || null;
-        
-        console.log("Browser ID:", browserID);
-        console.log("Initial Session IDs - Order:", orderSessionId, "State:", stateSessionId, "FMCSA:", fmcsaSessionId);
+        let currentSessionId = null;
+        // Initialize separate session IDs for different modes
+        let orderSessionId = localStorage.getItem(`heavyhaul_session_${orderID}_${browserID}`) || null;
+        let stateSessionId = localStorage.getItem(`heavyhaul_state_session_${browserID}`) || null;
+        let fmcsaSessionId = localStorage.getItem(`heavyhaul_fmcsa_session_${browserID}`) || null;
         
         let currentAudioSource = null;
         let audioContext = null;
@@ -1165,16 +1167,19 @@
 
         function updateSessionIdBasedOnMode() {
             const mode = chatModeInput.value || 'order';
-            
             if (mode === 'order') {
-                sessionIdInput.value = orderSessionId || '';
+                currentSessionId = orderSessionId;
             } else if (mode === 'state') {
-                sessionIdInput.value = stateSessionId || '';
+                currentSessionId = stateSessionId;
             } else if (mode === 'fmcsa') {
-                sessionIdInput.value = fmcsaSessionId || '';
+                currentSessionId = fmcsaSessionId;
             }
-            
-            console.log(`Updated session ID for ${mode} mode:`, sessionIdInput.value);
+
+            if (currentSessionId) {
+                sessionIdInput.value = currentSessionId;
+            } else {
+                sessionIdInput.value = ''; // If currentSessionId is null, input becomes empty
+            }
         }
 
         // Initialize speech recognition
@@ -1419,12 +1424,10 @@
                 return;
             }
 
-            // Get current session ID based on the chat mode
+            // Get the current session ID before making the request
             updateSessionIdBasedOnMode();
-            const sessionIdForRequest = sessionIdInput.value.trim();
+            let sessionIdForRequest = sessionIdInput.value.trim();
             const browserFingerprint = browserIdInput.value;
-            
-            console.log(`Processing command for ${chatMode} mode with session ID:`, sessionIdForRequest);
             
             // Choose the endpoint based on chat mode
             let endpoint;
@@ -1436,13 +1439,7 @@
                 // For FMCSA with image upload, we need to use FormData
                 if (fileInput.files.length > 0) {
                     const formData = new FormData();
-                    // Always include browser_id for FMCSA requests
-                    formData.append('browser_id', browserFingerprint);
-                    
-                    if (sessionIdForRequest) {
-                        formData.append('session_id', sessionIdForRequest);
-                    }
-                    
+                    formData.append('session_id', sessionIdForRequest);
                     formData.append('query', command);
                     formData.append('file', fileInput.files[0]);
                     
@@ -1469,10 +1466,10 @@
                         const data = await response.json();
                         console.log(`${endpoint} response:`, data);
                         
-                        // Update session ID if provided
-                        if (data.session_id) {
+                        // Update session ID if provided and different
+                        if (data.session_id && (!sessionIdForRequest || data.session_id !== sessionIdForRequest)) {
                             fmcsaSessionId = data.session_id;
-                            localStorage.setItem(fmcsaSessionKey, fmcsaSessionId);
+                            localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, fmcsaSessionId);
                             console.log(`FMCSA Session ID updated:`, fmcsaSessionId);
                             sessionIdInput.value = fmcsaSessionId;
                         }
@@ -1504,37 +1501,23 @@
                     // Normal JSON request for FMCSA without image
                     requestData = { 
                         query: command,
-                        browser_id: browserFingerprint
+                        session_id: sessionIdForRequest 
                     };
-                    
-                    // Only include session_id if we have one
-                    if (sessionIdForRequest) {
-                        requestData.session_id = sessionIdForRequest;
-                    }
                 }
             } else if (chatMode === 'order') {
                 endpoint = '/chat';
                 requestData = { 
                     message: command,
+                    session_id: sessionIdForRequest,
                     order_id: orderIdVal,
                     browser_fingerprint: browserFingerprint
                 };
-                
-                // Only include session_id if we have one
-                if (sessionIdForRequest) {
-                    requestData.session_id = sessionIdForRequest;
-                }
             } else { // chatMode === 'state'
                 endpoint = '/chatstate';
                 requestData = { 
                     message: command,
-                    browser_id: browserFingerprint
+                    session_id: sessionIdForRequest 
                 };
-                
-                // Only include session_id if we have one
-                if (sessionIdForRequest) {
-                    requestData.session_id = sessionIdForRequest;
-                }
             }
 
             // Initialize AudioContext if not already done
@@ -1580,21 +1563,21 @@
                 const data = await response.json();
                 console.log(`${endpoint} response:`, data);
                 
-                // Update session ID if provided
-                if (data.session_id) {
+                // Update session ID if provided and different from the request
+                if (data.session_id && (!sessionIdForRequest || data.session_id !== sessionIdForRequest)) {
                     if (chatMode === 'order') {
                         orderSessionId = data.session_id;
-                        localStorage.setItem(orderSessionKey, orderSessionId);
+                        localStorage.setItem(`heavyhaul_session_${orderIdVal}_${browserID}`, orderSessionId);
                         console.log(`Order Session ID updated:`, orderSessionId);
                         sessionIdInput.value = orderSessionId;
                     } else if (chatMode === 'state') {
                         stateSessionId = data.session_id;
-                        localStorage.setItem(stateSessionKey, stateSessionId);
+                        localStorage.setItem(`heavyhaul_state_session_${browserID}`, stateSessionId);
                         console.log(`State Session ID updated:`, stateSessionId);
                         sessionIdInput.value = stateSessionId;
                     } else if (chatMode === 'fmcsa') {
                         fmcsaSessionId = data.session_id;
-                        localStorage.setItem(fmcsaSessionKey, fmcsaSessionId);
+                        localStorage.setItem(`heavyhaul_fmcsa_session_${browserID}`, fmcsaSessionId);
                         console.log(`FMCSA Session ID updated:`, fmcsaSessionId);
                         sessionIdInput.value = fmcsaSessionId;
                     }
@@ -1996,3 +1979,6 @@
     else initWidget();
 
 })();
+</script>
+</body>
+</html>
