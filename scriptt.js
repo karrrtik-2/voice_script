@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HeavyHaul Widget Test</title>
-</head>
-<body>
-    <h1>HeavyHaul Voice Assistant Widget Test</h1>
-    <p>This is a test page for the HeavyHaul voice assistant widget.</p>
-    <script> (function() {
+(function() {
         // Create and inject CSS (Enhanced Theme that matches the website)
         const style = document.createElement('style');
         style.innerHTML = `
@@ -1979,6 +1969,3 @@
     else initWidget();
 
 })();
-</script>
-</body>
-</html>
