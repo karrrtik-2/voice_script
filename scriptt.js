@@ -1112,7 +1112,9 @@
         const wordReplacements = {
             "knight": "night",
             "excel": "axle",
-            "voter": "order"
+            "voter": "order",
+            "science": "signs",
+            "destructions": "restrictions"
         };
 
         function applyWordReplacements(text) {
