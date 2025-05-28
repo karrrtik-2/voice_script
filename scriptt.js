@@ -1473,8 +1473,8 @@
                         // Display assistant's response
                         addMessage(data.response, false, data.message_id, elements);
                         
-                        // Generate and play audio
-                        await playAudioResponse(data);
+                        // Generate and play audio - Enhanced version to try TTS for all endpoints
+                        await playAudioResponse(data, command);
                         
                     } catch (error) {
                         console.error('Error processing FMCSA with image:', error);
@@ -1578,8 +1578,8 @@
                 // Display assistant's response
                 addMessage(data.response, false, data.message_id, elements);
 
-                // Generate and play audio response
-                await playAudioResponse(data);
+                // Generate and play audio response - Enhanced version to try TTS for all endpoints
+                await playAudioResponse(data, command);
                 
             } catch (error) {
                 if (error.message !== 'No audio endpoint' && 
@@ -1609,14 +1609,50 @@
             }
         }
         
-        // Function to generate and play audio response
-        async function playAudioResponse(data) {
-            // Generate and play audio response if available
-            if (data.audio_endpoint && audioContext) {
+        // Enhanced function to generate and play audio response - now supports all endpoints
+        async function playAudioResponse(data, originalCommand) {
+            if (!audioContext) {
+                console.log("No audio context available, skipping audio generation");
+                statusDiv.textContent = 'Ready.';
+                statusDiv.classList.remove('heavyhaul-pulse');
+                processingCommand = false;
+                
+                if (isListening) {
+                    setTimeout(() => safeStartRecognition(), 300);
+                }
+                return;
+            }
+            
+            let audioEndpoint = null;
+            
+            // Try to get audio endpoint from response first (for /chat endpoint)
+            if (data.audio_endpoint) {
+                audioEndpoint = data.audio_endpoint;
+                console.log("Using audio endpoint from response:", audioEndpoint);
+            } else {
+                // For other endpoints (/chatstate, /fmcsabot), use default TTS
+                const chatMode = chatModeInput.value || 'order';
+                if (chatMode === 'state' || chatMode === 'fmcsa') {
+                    audioEndpoint = '/api/tts'; // Use the standard TTS endpoint
+                    console.log("Using default TTS endpoint for", chatMode, "mode");
+                } else {
+                    console.log("No audio endpoint available and not in state/fmcsa mode, skipping audio");
+                    statusDiv.textContent = 'Ready.';
+                    statusDiv.classList.remove('heavyhaul-pulse');
+                    processingCommand = false;
+                    
+                    if (isListening) {
+                        setTimeout(() => safeStartRecognition(), 300);
+                    }
+                    return;
+                }
+            }
+            
+            try {
                 statusDiv.textContent = 'Generating audio...';
                 
                 // Call the audio generation API
-                const audioResponse = await fetch(`${API_URL}${data.audio_endpoint}`, {
+                const audioResponse = await fetch(`${API_URL}${audioEndpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: data.response })
@@ -1723,8 +1759,9 @@
                 };
 
                 source.start(0); // Start playing the audio
-            } else {
-                console.log("Skipping audio generation/playback.");
+                
+            } catch (error) {
+                console.log("Audio generation/playback failed:", error.message);
                 statusDiv.textContent = 'Ready.';
                 statusDiv.classList.remove('heavyhaul-pulse');
                 processingCommand = false;
