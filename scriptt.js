@@ -1114,7 +1114,8 @@
             "excel": "axle",
             "voter": "order",
             "science": "signs",
-            "destructions": "restrictions"
+            "destructions": "restrictions",
+            "loot": "route"
         };
 
         function applyWordReplacements(text) {
