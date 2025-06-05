@@ -1185,7 +1185,7 @@
             
             recognition = new SpeechRecognition();
             recognition.lang = 'en-US';
-            recognition.continuous = false; // Keep false - we manage restarts
+            recognition.continuous = true; // Keep false - we manage restarts
             recognition.interimResults = false; // Keep false - simplifies logic
             recognition.maxAlternatives = 1;
 
@@ -1800,7 +1800,7 @@
             // Recreate recognition object
             recognition = new SpeechRecognition();
             recognition.lang = 'en-US';
-            recognition.continuous = false;
+            recognition.continuous = true;
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
             
