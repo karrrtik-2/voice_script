@@ -1372,7 +1372,11 @@
             "voter": "order",
             "science": "signs",
             "destructions": "restrictions",
-            "loot": "route"
+            "loot": "route",
+            "water": "order",
+            "warder": "order,
+            "pyramid": "permit",
+            "pyramids": "permits"
         };
 
         function applyWordReplacements(text) {
