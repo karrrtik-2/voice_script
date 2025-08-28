@@ -1308,7 +1308,7 @@
         }
 
         const statusDiv = document.getElementById('heavyhaul-status');
-        const API_URL = 'http://127.0.0.1:8000';
+        const API_URL = 'https://www.heavyhaulgbt.com';
 
         const currentState = window.messageFeedbackState[messageId];
         const payload = {
@@ -1387,7 +1387,7 @@
             return modifiedText;
         }
 
-        const API_URL = 'http://127.0.0.1:8000';
+        const API_URL = 'https://www.heavyhaulgbt.com';
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let isListening = false;
