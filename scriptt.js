@@ -1375,6 +1375,7 @@
             "loot": "route",
             "water": "order",
             "warder": "order,
+            "Warder": "order,
             "pyramid": "permit",
             "pyramids": "permits"
         };
