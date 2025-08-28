@@ -836,9 +836,7 @@
         return urlParams.get(param);
     }
 
-    // Get order ID from URL
-    // const CURRENT_ORDER_ID = getQueryParam("orderId");
-    const CURRENT_ORDER_ID = 78856053; // For testing purposes
+    const CURRENT_ORDER_ID = getQueryParam("orderId");
     console.log("HeavyHaul Assistant - Order ID:", CURRENT_ORDER_ID);
 
     // Language state management
