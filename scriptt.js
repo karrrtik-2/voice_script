@@ -535,6 +535,7 @@
         .heavyhaul-message-content {
             margin-bottom: 8px;
             line-height: 1.4;
+            white-space: pre-wrap; 
         }
     
         /* Enhanced Feedback Button Styling */
@@ -1185,6 +1186,10 @@
         else if (!shouldShow && isCurrentlyVisible) popup.classList.remove('active');
     }
 
+    function formatMessageText(text) {
+    return text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    }
+        
     function addMessage(text, isUser, messageId = null, elements = null) {
         const conversationDiv = elements ? elements.conversationDiv : document.getElementById('heavyhaul-conversation');
         if (!conversationDiv) return;
@@ -1202,7 +1207,8 @@
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'heavyhaul-message-content';
-        contentDiv.textContent = text;
+        const formattedText = formatMessageText(text);
+        contentDiv.innerHTML = formattedText;
 
         messageDiv.appendChild(labelDiv);
         messageDiv.appendChild(contentDiv);
