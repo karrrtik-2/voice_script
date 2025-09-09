@@ -2149,4 +2149,3 @@
     else initWidget();
 
     })();
-    </script>
