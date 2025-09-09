@@ -1,4 +1,15 @@
-(function() {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeavyHaul Widget Test</title>
+</head>
+<body>
+    <h1>HeavyHaul Voice Assistant Widget Test</h1>
+    <p>This is a test page for the HeavyHaul voice assistant widget.</p>
+    <script>
+    (function() {
         const style = document.createElement('style');
         style.innerHTML = `
         .heavyhaul-assistant-widget {
@@ -293,9 +304,9 @@
         .heavyhaul-button-container {
             display: flex;
             justify-content: center;
-            margin: -2px 0 9px; /* Changed from 15px 0 - moves it 10px up */
+            margin: -2px 0 9px; 
             flex-shrink: 0;
-            gap: 10px; /* Added gap for upload button */
+            gap: 10px;
         }
     
         .heavyhaul-button {
@@ -707,7 +718,7 @@
                 generating_audio: "Generating audio...",
                 decoding_audio: "Decoding audio...",
                 playing_audio: "Playing... (Say \"STOP\" to interrupt)",
-                audio_stopped: "Audio stopped. Listening...",
+                audio_stopped: "Audio stopped. Ready.",
                 no_audio_playing: "There's no audio currently playing to stop.",
                 stopped_listening: "Stopped listening.",
                 ready: "Ready.",
@@ -742,7 +753,7 @@
                 generating_audio: "Generando audio...",
                 decoding_audio: "Decodificando audio...",
                 playing_audio: "Reproduciendo... (Di \"PARE\" para interrumpir)",
-                audio_stopped: "Audio detenido. Escuchando...",
+                audio_stopped: "Audio detenido. Listo.",
                 no_audio_playing: "No hay audio reproduciéndose actualmente para detener.",
                 stopped_listening: "Dejé de escuchar.",
                 ready: "Listo.",
@@ -777,7 +788,7 @@
                 generating_audio: "Генерация аудио...",
                 decoding_audio: "Декодирование аудио...",
                 playing_audio: "Воспроизведение... (Скажите \"СТОП\" чтобы прервать)",
-                audio_stopped: "Аудио остановлено. Слушаю...",
+                audio_stopped: "Аудио остановлено. Готов.",
                 no_audio_playing: "В данный момент нет воспроизводимого аудио для остановки.",
                 stopped_listening: "Прекратил слушать.",
                 ready: "Готов.",
@@ -812,7 +823,7 @@
                 generating_audio: "Generez audio...",
                 decoding_audio: "Decodificare audio...",
                 playing_audio: "Redare... (Spune \"STOP\" pentru a întrerupe)",
-                audio_stopped: "Audio oprit. Ascult...",
+                audio_stopped: "Audio oprit. Gata.",
                 no_audio_playing: "Nu există audio în redare în prezent pentru a fi oprit.",
                 stopped_listening: "Am oprit ascultarea.",
                 ready: "Gata.",
@@ -837,7 +848,7 @@
         return urlParams.get(param);
     }
 
-    const CURRENT_ORDER_ID = getQueryParam("orderId");
+    const CURRENT_ORDER_ID = getQueryParam("orderId"); //getQueryParam('order_id');
     console.log("HeavyHaul Assistant - Order ID:", CURRENT_ORDER_ID);
 
     // Language state management
@@ -1189,7 +1200,7 @@
     function formatMessageText(text) {
     return text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
     }
-        
+
     function addMessage(text, isUser, messageId = null, elements = null) {
         const conversationDiv = elements ? elements.conversationDiv : document.getElementById('heavyhaul-conversation');
         if (!conversationDiv) return;
@@ -1207,6 +1218,7 @@
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'heavyhaul-message-content';
+
         const formattedText = formatMessageText(text);
         contentDiv.innerHTML = formattedText;
 
@@ -1402,6 +1414,12 @@
         let isListening = false;
         let processingCommand = false;
         
+        // Add debouncing variables
+        let lastProcessedTranscript = '';
+        let lastProcessedTime = 0;
+        const DEBOUNCE_TIME = 2000; // 2 seconds
+        const SIMILARITY_THRESHOLD = 0.8; // 80% similarity threshold
+        
         const browserID = browserIdInput.value;
         const orderID = orderIdInput.value;
         let currentSessionId = null;
@@ -1413,6 +1431,10 @@
         let audioContext = null;
         let isAudioPlaying = false;
         let lastStopCommand = 0;
+        
+        // Better audio feedback loop prevention
+        let audioEndedTime = 0;
+        const AUDIO_BUFFER_TIME = 1000; // 1 second buffer after audio ends
 
         window.messageFeedbackState = {};
 
@@ -1435,6 +1457,62 @@
             }
         }
 
+        // Enhanced similarity function for better debouncing
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+            
+            if (longer.length === 0) return 1.0;
+            
+            const distance = levenshteinDistance(longer, shorter);
+            return (longer.length - distance) / longer.length;
+        }
+
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[str2.length][str1.length];
+        }
+
+        function shouldProcessTranscript(transcript) {
+            const now = Date.now();
+            const timeSinceLastProcessed = now - lastProcessedTime;
+            
+            // If enough time has passed, always process
+            if (timeSinceLastProcessed > DEBOUNCE_TIME) {
+                return true;
+            }
+            
+            // If not enough time has passed, check similarity
+            const similarity = calculateSimilarity(transcript.toLowerCase(), lastProcessedTranscript.toLowerCase());
+            
+            // If similarity is high, don't process (likely duplicate)
+            if (similarity > SIMILARITY_THRESHOLD) {
+                console.log(`Skipping similar transcript (${(similarity * 100).toFixed(1)}% similar):`, transcript);
+                return false;
+            }
+            
+            return true;
+        }
+
         function initSpeechRecognition() {
             if (!SpeechRecognition) {
                 statusDiv.textContent = getMessage('speech_not_supported');
@@ -1443,15 +1521,22 @@
             }
             
             recognition = new SpeechRecognition();
-            recognition.lang = getSpeechLanguage(); // Use current language
+            recognition.lang = getSpeechLanguage();
             recognition.continuous = true;
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
 
-            // Store recognition globally for language updates
             window.heavyhaulRecognition = recognition;
 
             recognition.onresult = (event) => {
+                const now = Date.now();
+                
+                // Ignore speech too soon after audio ended (feedback loop prevention)
+                if (now - audioEndedTime < AUDIO_BUFFER_TIME) {
+                    console.log("Ignoring speech too soon after audio ended (potential feedback loop)");
+                    return;
+                }
+
                 let originalTranscript = event.results[0][0].transcript.trim();
                 console.log('Original recognized speech:', originalTranscript);
 
@@ -1462,7 +1547,7 @@
 
                 const transcriptLower = transcript.toLowerCase();
 
-                // Check for stop command in different languages
+                // Enhanced STOP command detection
                 const stopWords = ['stop', 'pare', 'стоп', 'oprește'];
                 const containsStop = stopWords.some(word => transcriptLower.includes(word));
 
@@ -1480,17 +1565,18 @@
                         statusDiv.textContent = getMessage('audio_stopped');
                         processingCommand = false;
                         
+                        // Stop recognition and restart after brief delay
                         try {
-                            recognition.stop();
+                            recognition.abort();
                         } catch (e) {
                             console.warn("Error stopping recognition after stop command:", e);
                         }
                         
                         setTimeout(() => {
-                            if (isListening) {
+                            if (isListening && !isAudioPlaying && !processingCommand) {
                                 safeStartRecognition();
                             }
-                        }, 300);
+                        }, 500);
                         
                         return;
                     } else {
@@ -1499,13 +1585,18 @@
                         addMessage(getMessage('no_audio_playing'), false, null, elements);
                         
                         setTimeout(() => {
-                            if (isListening) {
+                            if (isListening && !isAudioPlaying && !processingCommand) {
                                 safeStartRecognition();
                             }
-                        }, 300);
+                        }, 500);
                         
                         return;
                     }
+                }
+
+                // Enhanced duplicate detection
+                if (!shouldProcessTranscript(transcript)) {
+                    return;
                 }
 
                 if (isAudioPlaying) {
@@ -1517,6 +1608,10 @@
                     console.log("Already processing a command, ignoring:", transcript);
                     return;
                 }
+
+                // Update debouncing state
+                lastProcessedTranscript = transcript;
+                lastProcessedTime = now;
 
                 processingCommand = true;
                 statusDiv.textContent = getMessage('processing');
@@ -1551,17 +1646,20 @@
                         if (isListening && !isAudioPlaying && !processingCommand) {
                             safeStartRecognition();
                         }
-                    }, 500);
+                    }, 1000); // Increased delay
                 }
             };
 
             recognition.onend = () => {
                 console.log('Recognition ended.');
+                // Add longer delay before restarting to prevent feedback loops
                 if (isListening && !isAudioPlaying && !processingCommand) {
                     console.log('Recognition end: Restarting recognition via onend...');
                     setTimeout(() => {
-                        safeStartRecognition();
-                    }, 200);
+                        if (isListening && !isAudioPlaying && !processingCommand) {
+                            safeStartRecognition();
+                        }
+                    }, 500); // Increased delay
                 } else {
                     console.log(`Recognition end: Not restarting (isListening: ${isListening}, isAudioPlaying: ${isAudioPlaying}, processingCommand: ${processingCommand})`);
                     if (!isListening && statusDiv.textContent.endsWith('...')) {
@@ -1599,7 +1697,7 @@
                                 console.error("Second attempt to start recognition failed:", e);
                             }
                         }
-                    }, 300);
+                    }, 500); // Increased delay
                     if (isListening) statusDiv.textContent = getMessage('listening');
                 } else {
                     console.error('Error starting recognition:', err);
@@ -1624,9 +1722,11 @@
                 finally {
                     currentAudioSource = null;
                     isAudioPlaying = false;
+                    audioEndedTime = Date.now(); // Record when audio ended
                 }
             } else {
                 isAudioPlaying = false;
+                audioEndedTime = Date.now();
             }
         }
 
@@ -1641,7 +1741,7 @@
                 statusDiv.classList.remove('heavyhaul-pulse');
                 processingCommand = false;
                 if (isListening) {
-                    setTimeout(() => safeStartRecognition(), 300);
+                    setTimeout(() => safeStartRecognition(), 500);
                 }
                 return;
             }
@@ -1660,7 +1760,7 @@
                     formData.append('session_id', sessionIdForRequest);
                     formData.append('query', command);
                     formData.append('file', fileInput.files[0]);
-                    formData.append('lang', selectedLanguage); // Add language parameter
+                    formData.append('lang', selectedLanguage);
                     
                     try {
                         console.log(`Sending to ${endpoint} with image and language ${selectedLanguage}:`, formData);
@@ -1706,7 +1806,7 @@
                         processingCommand = false;
                         
                         if (isListening) {
-                            setTimeout(() => safeStartRecognition(), 300);
+                            setTimeout(() => safeStartRecognition(), 500);
                         }
                     }
                     
@@ -1715,7 +1815,7 @@
                     requestData = { 
                         query: command,
                         session_id: sessionIdForRequest,
-                        lang: selectedLanguage // Add language parameter
+                        lang: selectedLanguage
                     };
                 }
             } else if (chatMode === 'order') {
@@ -1725,14 +1825,14 @@
                     session_id: sessionIdForRequest,
                     order_id: orderIdVal,
                     browser_fingerprint: browserFingerprint,
-                    lang: selectedLanguage // Add language parameter
+                    lang: selectedLanguage
                 };
             } else { // chatMode === 'state'
                 endpoint = '/chatstate';
                 requestData = { 
                     message: command,
                     session_id: sessionIdForRequest,
-                    lang: selectedLanguage // Add language parameter
+                    lang: selectedLanguage
                 };
             }
 
@@ -1750,7 +1850,7 @@
                     processingCommand = false;
                     statusDiv.classList.remove('heavyhaul-pulse');
                     if (isListening) {
-                        setTimeout(() => safeStartRecognition(), 300);
+                        setTimeout(() => safeStartRecognition(), 500);
                     }
                     return;
                 }
@@ -1823,7 +1923,7 @@
                         if (isListening && !isAudioPlaying && !processingCommand) {
                             safeStartRecognition();
                         }
-                    }, 300);
+                    }, 500);
                 }
             }
         }
@@ -1836,7 +1936,7 @@
                 processingCommand = false;
                 
                 if (isListening) {
-                    setTimeout(() => safeStartRecognition(), 300);
+                    setTimeout(() => safeStartRecognition(), 500);
                 }
                 return;
             }
@@ -1858,7 +1958,7 @@
                     processingCommand = false;
                     
                     if (isListening) {
-                        setTimeout(() => safeStartRecognition(), 300);
+                        setTimeout(() => safeStartRecognition(), 500);
                     }
                     return;
                 }
@@ -1872,7 +1972,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                     text: data.response,
-                    lang: data.lang // Pass the language code here
+                    lang: data.lang
                 })
                 });
                 
@@ -1911,59 +2011,47 @@
                 statusDiv.textContent = getMessage('playing_audio');
                 statusDiv.classList.remove('heavyhaul-pulse');
 
-                if (isListening && recognition) {
-                    console.log("Attempting to start recognition during playback...");
-                    try { 
-                        recognition.start(); 
-                    } catch(e) { 
-                        console.warn("Rec start during playback failed:", e.name);
-                        setTimeout(() => {
-                            if (isListening && isAudioPlaying) {
-                                try {
-                                    recognition.start();
-                                    console.log("Delayed start of recognition during playback succeeded");
-                                } catch(e2) {
-                                    console.warn("Delayed rec start during playback also failed:", e2.name);
-                                }
-                            }
-                        }, 200);
-                    }
-                }
+                // Don't start recognition during playback - wait for audio to end
+                console.log("Audio playback started, recognition will restart when audio ends");
 
                 source.onended = () => {
-                    console.log('Playback finished or stopped.');
+                    console.log('Playback finished.');
                     const localSourceRef = source;
                     const wasStoppedManually = !currentAudioSource || currentAudioSource !== localSourceRef;
 
                     if (currentAudioSource === localSourceRef) {
                         currentAudioSource = null;
                         isAudioPlaying = false;
+                        audioEndedTime = Date.now(); // Record when audio ended
 
                         if (!wasStoppedManually) {
                             console.log("Audio ended naturally.");
                             processingCommand = false;
                             if (isListening) {
-                                console.log("Audio ended naturally: Triggering recognition restart.");
-                                try {
-                                    recognition.stop();
-                                } catch (e) {
-                                    console.warn("Error stopping recognition after natural audio end:", e);
-                                }
+                                console.log("Audio ended naturally: Triggering recognition restart after buffer time.");
+                                statusDiv.textContent = getMessage('listening');
                                 
+                                // Add buffer time before restarting recognition
                                 setTimeout(() => {
                                     if (isListening && !isAudioPlaying && !processingCommand) {
                                         safeStartRecognition();
                                     }
-                                }, 300);
+                                }, AUDIO_BUFFER_TIME); // Wait for buffer time
                             } else {
                                 statusDiv.textContent = getMessage('ready');
                             }
                         } else {
-                            console.log("Audio was stopped manually. Restart handled by recognition.onend.");
+                            console.log("Audio was stopped manually.");
+                            processingCommand = false;
                             if(isListening) {
                                 statusDiv.textContent = getMessage('listening');
+                                setTimeout(() => {
+                                    if (isListening && !isAudioPlaying && !processingCommand) {
+                                        safeStartRecognition();
+                                    }
+                                }, 500);
                             } else {
-                                statusDiv.textContent = 'Audio stopped.';
+                                statusDiv.textContent = getMessage('ready');
                             }
                         }
                     } else {
@@ -1980,7 +2068,7 @@
                 processingCommand = false;
                 
                 if (isListening) {
-                    setTimeout(() => safeStartRecognition(), 300);
+                    setTimeout(() => safeStartRecognition(), 500);
                 }
             }
         }
@@ -1994,158 +2082,6 @@
                 `${micIconSpan} ${getMessage('start_listening')}`;
             if(isListening) speakBtn.appendChild(waveAnimation);
         }
-
-        async function resetRecognitionEngine() {
-            console.log("Completely resetting recognition engine");
-            if (recognition) {
-                try {
-                    recognition.abort();
-                } catch (e) {
-                    console.warn("Error during recognition abort in reset:", e);
-                }
-                recognition = null;
-                window.heavyhaulRecognition = null;
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            recognition = new SpeechRecognition();
-            recognition.lang = getSpeechLanguage(); // Use current language
-            recognition.continuous = true;
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-            
-            window.heavyhaulRecognition = recognition;
-            
-            // Reattach all event handlers (same as in initSpeechRecognition)
-            recognition.onresult = (event) => {
-                let originalTranscript = event.results[0][0].transcript.trim();
-                console.log('Original recognized speech (reset engine):', originalTranscript);
-
-                let transcript = applyWordReplacements(originalTranscript);
-                 if (transcript !== originalTranscript) {
-                    console.log('Replaced speech (reset engine):', transcript);
-                }
-
-                const transcriptLower = transcript.toLowerCase();
-
-                const stopWords = ['stop', 'pare', 'стоп', 'oprește'];
-                const containsStop = stopWords.some(word => transcriptLower.includes(word));
-
-                if (containsStop) {
-                    const now = Date.now();
-                    if (now - lastStopCommand < 1000) {
-                        console.log("Debouncing too rapid stop command");
-                        return;
-                    }
-                    lastStopCommand = now;
-                    
-                    if (isAudioPlaying) {
-                        console.log("STOP command detected during playback!");
-                        stopAudioPlayback();
-                        statusDiv.textContent = getMessage('audio_stopped');
-                        processingCommand = false;
-                        
-                        try {
-                            recognition.stop();
-                        } catch (e) {
-                            console.warn("Error stopping recognition after stop command:", e);
-                        }
-                        
-                        setTimeout(() => {
-                            if (isListening) {
-                                safeStartRecognition();
-                            }
-                        }, 300);
-                        
-                        return;
-                    } else {
-                        console.log("STOP command received, but no audio was playing.");
-                        addMessage("STOP", true, null, elements);
-                        addMessage(getMessage('no_audio_playing'), false, null, elements);
-                        
-                        setTimeout(() => {
-                            if (isListening) {
-                                safeStartRecognition();
-                            }
-                        }, 300);
-                        
-                        return;
-                    }
-                }
-
-                if (isAudioPlaying) {
-                    console.log("Ignoring speech received while audio is playing:", transcript);
-                    return;
-                }
-
-                if (processingCommand) {
-                    console.log("Already processing a command, ignoring:", transcript);
-                    return;
-                }
-
-                processingCommand = true;
-                statusDiv.textContent = getMessage('processing');
-                statusDiv.classList.add('heavyhaul-pulse');
-                addMessage(transcript, true, null, elements);
-                processCommand(transcript);
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error, event.message);
-                let errorMsg = `Mic Error: ${event.error}.`;
-                if (event.error === 'no-speech' && isListening) {
-                    errorMsg = getMessage('no_speech_detected');
-                } else if (event.error === 'not-allowed') {
-                    errorMsg = getMessage('mic_access_denied');
-                    isListening = false;
-                    updateListenButtonState();
-                } else if (event.error === 'audio-capture') {
-                    errorMsg = 'Mic capture failed. Is it being used elsewhere?';
-                    isListening = false;
-                    updateListenButtonState();
-                } else if (isListening) {
-                    errorMsg += ' Retrying...';
-                } else {
-                    errorMsg += ' Stopped.';
-                }
-                statusDiv.textContent = errorMsg;
-                processingCommand = false;
-                
-                if (event.error === 'aborted' || event.error === 'network') {
-                    setTimeout(() => {
-                        if (isListening && !isAudioPlaying && !processingCommand) {
-                            safeStartRecognition();
-                        }
-                    }, 500);
-                }
-            };
-
-            recognition.onend = () => {
-                console.log('Recognition ended.');
-                if (isListening && !isAudioPlaying && !processingCommand) {
-                    console.log('Recognition end: Restarting recognition via onend...');
-                    setTimeout(() => {
-                        safeStartRecognition();
-                    }, 200);
-                } else {
-                    console.log(`Recognition end: Not restarting (isListening: ${isListening}, isAudioPlaying: ${isAudioPlaying}, processingCommand: ${processingCommand})`);
-                    if (!isListening && statusDiv.textContent.endsWith('...')) {
-                        statusDiv.textContent = getMessage('stopped_listening');
-                    }
-                }
-            };
-            
-            return true;
-        }
-        
-        setInterval(async () => {
-            if (!isListening || isAudioPlaying || processingCommand) return;
-            await resetRecognitionEngine();
-            if (isListening) {
-                setTimeout(() => safeStartRecognition(), 300);
-            }
-        }, 60000);
 
         if (initSpeechRecognition()) {
             speakBtn.addEventListener('click', async (event) => {
@@ -2175,6 +2111,9 @@
 
                 if (isListening) {
                     processingCommand = false; 
+                    // Reset debouncing state when starting to listen
+                    lastProcessedTranscript = '';
+                    lastProcessedTime = 0;
                     safeStartRecognition(); 
                 }
                 else {
@@ -2220,3 +2159,7 @@
     else initWidget();
 
     })();
+    </script>
+
+</body>
+</html>
